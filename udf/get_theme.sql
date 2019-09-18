@@ -1,16 +1,5 @@
 CREATE TEMP FUNCTION
-  udf_get_theme(theme STRUCT<id STRING,
-    blocklisted BOOL,
-    description STRING,
-    name STRING,
-    user_disabled BOOL,
-    app_disabled BOOL,
-    version STRING,
-    scope INT64,
-    foreign_install BOOL,
-    has_binary_components BOOL,
-    install_day INT64,
-    update_day INT64>) AS ((
+  udf_get_theme(theme STRUCT<app_disabled BOOL, blocklisted BOOL, description STRING, has_binary_components BOOL, id STRING, install_day INT64, name STRING, scope INT64, update_day INT64, user_disabled BOOL, version STRING>) AS ((
   SELECT
     AS STRUCT
     IFNULL(theme.id, "MISSING") as id,

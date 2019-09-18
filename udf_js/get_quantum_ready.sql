@@ -12,18 +12,7 @@ CREATE TEMP FUNCTION
     type STRING,
     update_day INT64>>>,
   active_addons_json STRING,
-  theme STRUCT<id STRING,
-    blocklisted BOOL,
-    description STRING,
-    name STRING,
-    user_disabled BOOL,
-    app_disabled BOOL,
-    version STRING,
-    scope INT64,
-    foreign_install BOOL,
-    has_binary_components BOOL,
-    install_day INT64,
-    update_day INT64>)
+  theme STRUCT<app_disabled BOOL, blocklisted BOOL, description STRING, has_binary_components BOOL, id STRING, install_day INT64, name STRING, scope INT64, update_day INT64, user_disabled BOOL, version STRING>)
     RETURNS BOOL
   LANGUAGE js AS """
     const activeAddonsExtras = JSON.parse(active_addons_json);
