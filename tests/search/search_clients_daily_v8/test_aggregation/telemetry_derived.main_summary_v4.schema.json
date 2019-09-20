@@ -1,7 +1,7 @@
 [
   {
     "type": "DATE",
-    "name": "submission_date_s3",
+    "name": "submission_date",
     "mode": "REQUIRED"
   },
   {

@@ -16,6 +16,17 @@ CREATE TEMP FUNCTION
     LIMIT
       1 ));
 --
+-- Return the version of the search addon if it exists, null otherwise
+CREATE TEMP FUNCTION
+  get_search_addon_version(addon_list ANY TYPE) AS ((
+    SELECT
+      element.version
+    FROM
+      UNNEST(addon_list)
+    WHERE
+      element.addon_id = 'followonsearch@mozilla.com'
+  ));
+
 WITH
   augmented AS (
   SELECT
@@ -57,7 +68,7 @@ WITH
       FROM
         UNNEST(scalar_parent_browser_search_with_ads.key_value) ) ) AS _searches
   FROM
-    main_summary_v4 ),
+    telemetry_derived.main_summary_v4 ),
   flattened AS (
   SELECT
     *
@@ -77,11 +88,12 @@ WITH
   windowed AS (
   SELECT
     ROW_NUMBER() OVER w1_unframed AS _n,
-    submission_date_s3 AS submission_date,
+    submission_date,
     client_id,
     engine,
     source,
     udf_mode_last(ARRAY_AGG(country) OVER w1) AS country,
+    get_search_addon_version(active_addons.list) AS addon_version,
     udf_mode_last(ARRAY_AGG(app_version) OVER w1) AS app_version,
     udf_mode_last(ARRAY_AGG(distribution_id) OVER w1) AS distribution_id,
     udf_mode_last(ARRAY_AGG(locale) OVER w1) AS locale,
@@ -140,7 +152,7 @@ WITH
   FROM
     flattened
   WHERE
-    submission_date_s3 = @submission_date
+    submission_date = @submission_date
     AND client_id IS NOT NULL
     AND (count < 10000
       OR count IS NULL)
@@ -149,7 +161,7 @@ WITH
     w1 AS (
     PARTITION BY
       client_id,
-      submission_date_s3,
+      submission_date,
       engine,
       source,
       type
@@ -160,7 +172,7 @@ WITH
     w1_unframed AS (
     PARTITION BY
       client_id,
-      submission_date_s3,
+      submission_date,
       engine,
       source,
       type
