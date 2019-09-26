@@ -25,6 +25,8 @@ CREATE TEMP FUNCTION
       UNNEST(addon_list)
     WHERE
       element.addon_id = 'followonsearch@mozilla.com'
+    LIMIT
+      1
   ));
 
 WITH

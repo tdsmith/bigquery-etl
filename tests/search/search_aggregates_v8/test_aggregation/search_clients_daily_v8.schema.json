@@ -5,28 +5,8 @@
     "mode": "NULLABLE"
   },
   {
-    "type": "STRING",
-    "name": "client_id",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "engine",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "source",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "country",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "addon_version",
+    "type": "INTEGER",
+    "name": "profile_creation_date",
     "mode": "NULLABLE"
   },
   {
@@ -36,7 +16,17 @@
   },
   {
     "type": "STRING",
+    "name": "country",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
     "name": "distribution_id",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "engine",
     "mode": "NULLABLE"
   },
   {
@@ -46,12 +36,47 @@
   },
   {
     "type": "STRING",
-    "name": "user_pref_browser_search_region",
+    "name": "search_cohort",
     "mode": "NULLABLE"
   },
   {
     "type": "STRING",
-    "name": "search_cohort",
+    "name": "source",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "default_search_engine",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "default_search_engine_data_submission_url",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "user_pref_browser_search_region",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INTEGER",
+    "name": "max_concurrent_tab_count_max",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "default_search_engine_data_load_path",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INTEGER",
+    "name": "tab_open_event_count_sum",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "client_id",
     "mode": "NULLABLE"
   },
   {
@@ -70,28 +95,8 @@
     "mode": "NULLABLE"
   },
   {
-    "type": "INTEGER",
-    "name": "profile_creation_date",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "default_search_engine",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "default_search_engine_data_load_path",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "default_search_engine_data_submission_url",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "STRING",
-    "name": "sample_id",
+    "type": "FLOAT",
+    "name": "active_addons_count_mean",
     "mode": "NULLABLE"
   },
   {
@@ -105,28 +110,18 @@
     "mode": "NULLABLE"
   },
   {
-    "type": "NUMERIC",
+    "type": "FLOAT",
     "name": "subsession_hours_sum",
     "mode": "NULLABLE"
   },
   {
     "type": "FLOAT",
-    "name": "active_addons_count_mean",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "INTEGER",
-    "name": "max_concurrent_tab_count_max",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "INTEGER",
-    "name": "tab_open_event_count_sum",
-    "mode": "NULLABLE"
-  },
-  {
-    "type": "FLOAT",
     "name": "active_hours_sum",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "sample_id",
     "mode": "NULLABLE"
   },
   {
@@ -162,6 +157,11 @@
   {
     "type": "INTEGER",
     "name": "unknown",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "addon_version",
     "mode": "NULLABLE"
   }
 ]

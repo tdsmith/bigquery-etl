@@ -10,7 +10,7 @@
     "mode": "NULLABLE"
   },
   {
-    "type": "STRING",
+    "type": "INTEGER",
     "name": "sample_id",
     "mode": "REQUIRED"
   },

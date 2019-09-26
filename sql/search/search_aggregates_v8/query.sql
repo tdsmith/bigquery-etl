@@ -11,7 +11,7 @@ SELECT
   default_search_engine,
   os,
   os_version,
-  COUNT(DISTINCT client_id) as client_count,
+  COUNT(*) as client_count,
   SUM(organic) as organic,
   SUM(tagged_sap) as tagged_sap,
   SUM(tagged_follow_on) as tagged_follow_on,
@@ -20,7 +20,7 @@ SELECT
   SUM(search_with_ads) as search_with_ads,
   SUM(unknown) as unknown
 FROM
-  search_clients_daily_v8_bq_test
+  search_clients_daily_v8
 WHERE
   submission_date = @submission_date
 GROUP BY
@@ -31,8 +31,8 @@ GROUP BY
   distribution_id,
   engine,
   locale,
-  os,
-  os_version,
   search_cohort,
   source,
-  default_search_engine
+  default_search_engine,
+  os,
+  os_version
