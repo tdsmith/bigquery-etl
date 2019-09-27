@@ -32,6 +32,13 @@ CREATE TEMP FUNCTION
       UNNEST(udf_json_extract_histogram(histogram).values)
     WHERE
       value > 0));
+CREATE TEMP FUNCTION udf_get_experiments(experiments ARRAY<STRUCT<key STRING, value STRUCT<branch STRING>>>)
+RETURNS STRUCT<key_value ARRAY<STRUCT<key STRING, value STRING>>> AS ((
+SELECT STRUCT(ARRAY_AGG((
+    SELECT AS STRUCT
+        key AS key,
+        value.branch AS value)) as key_value)
+    FROM UNNEST(experiments)));
 CREATE TEMP FUNCTION udf_get_key(map ANY TYPE, k ANY TYPE) AS (
  (
    SELECT key_value.value
@@ -106,22 +113,20 @@ CREATE TEMP FUNCTION
       UNNEST([REPLACE(key, "in-content.", "in-content:")]) AS key,
       UNNEST([STRPOS(key, ".")]) AS pos));
 CREATE TEMP FUNCTION
-  udf_get_theme(theme STRUCT<id STRING,
-    blocklisted BOOL,
-    description STRING,
-    name STRING,
-    user_disabled BOOL,
-    app_disabled BOOL,
-    version STRING,
-    scope INT64,
-    foreign_install BOOL,
-    has_binary_components BOOL,
-    install_day INT64,
-    update_day INT64>) AS ((
+  udf_get_theme(theme STRUCT<app_disabled BOOL, blocklisted BOOL, description STRING, has_binary_components BOOL, id STRING, install_day INT64, name STRING, scope INT64, update_day INT64, user_disabled BOOL, version STRING>) AS ((
   SELECT
     AS STRUCT
+    theme.app_disabled as app_disabled,
+    theme.blocklisted as blocklisted,
+    theme.description as description,
+    theme.has_binary_components as has_binary_components,
     IFNULL(theme.id, "MISSING") as id,
-    theme.* EXCEPT (id)
+    theme.install_day as install_day,
+    theme.name as name,
+    theme.scope as scope,
+    theme.update_day as update_day,
+    theme.user_disabled as user_disabled,
+    theme.version as version
 ));
 CREATE TEMP FUNCTION udf_get_user_prefs(user_prefs STRING)
 RETURNS STRUCT<user_pref_browser_launcherprocess_enabled BOOLEAN,
@@ -156,6 +161,14 @@ RETURNS STRUCT<user_pref_browser_launcherprocess_enabled BOOLEAN,
     CAST(JSON_EXTRACT_SCALAR(user_prefs, '$.security.pki.mitm_detected') AS BOOL),
     CAST(JSON_EXTRACT_SCALAR(user_prefs, '$.network.trr.mode') AS INT64)
 ));
+CREATE TEMP FUNCTION
+udf_histogram_to_threshold_count(histogram STRING, threshold INT64) AS ((
+    SELECT
+    IFNULL(SUM(value), 0)
+    FROM
+      UNNEST(udf_json_extract_histogram(histogram).values)
+    WHERE
+      key >= threshold));
 CREATE TEMP FUNCTION
   udf_js_get_active_addons(active_addons ARRAY<STRUCT<key STRING,
     value STRUCT<app_disabled BOOL,
@@ -242,6 +255,25 @@ if (addonDetails !== undefined) {
 return result;
 """;
 CREATE TEMP FUNCTION
+  udf_js_get_events(events_jsons ARRAY<STRUCT<process STRING, events_json STRING>>)
+  RETURNS ARRAY<STRUCT<
+    timestamp INT64,
+    category STRING,
+    method STRING,
+    object STRING,
+    string_value STRING,
+    map_values ARRAY<STRUCT<key STRING, value STRING>>>>
+  LANGUAGE js AS """
+  return events_jsons.flatMap(({process, events_json}) =>
+    JSON.parse(events_json).map((event) => {
+      const pairs = Object.entries(event.map_values || {}).map(([key, value]) => ({key, value}));
+      return {
+        ...event,
+        map_values: [{ key: "telemetry_process", value: process }, ...pairs]
+      };
+    }));
+""";
+CREATE TEMP FUNCTION
   udf_js_get_quantum_ready(e10s_enabled BOOL, active_addons ARRAY<STRUCT<key STRING,
     value STRUCT<app_disabled BOOL,
     blocklisted BOOL,
@@ -255,18 +287,7 @@ CREATE TEMP FUNCTION
     type STRING,
     update_day INT64>>>,
   active_addons_json STRING,
-  theme STRUCT<id STRING,
-    blocklisted BOOL,
-    description STRING,
-    name STRING,
-    user_disabled BOOL,
-    app_disabled BOOL,
-    version STRING,
-    scope INT64,
-    foreign_install BOOL,
-    has_binary_components BOOL,
-    install_day INT64,
-    update_day INT64>)
+  theme STRUCT<app_disabled BOOL, blocklisted BOOL, description STRING, has_binary_components BOOL, id STRING, install_day INT64, name STRING, scope INT64, update_day INT64, user_disabled BOOL, version STRING>)
     RETURNS BOOL
   LANGUAGE js AS """
     const activeAddonsExtras = JSON.parse(active_addons_json);
@@ -478,13 +499,13 @@ SELECT
   environment.system.gfx.headless AS environment_system_gfx_headless,
 
   -- TODO: Deprecate and eventually remove this field, preferring the top-level user_pref_* fields for easy schema evolution.
-  udf_get_old_user_prefs(environment.settings.user_prefs) AS user_prefs,
+  udf_get_old_user_prefs(JSON_EXTRACT(additional_properties, "$.environment.settings.user_prefs")) AS user_prefs,
 
-  udf_get_events([
-   ("content", payload.processes.content.events),
-   ("dynamic", payload.processes.dynamic.events),
-   ("gfx", payload.processes.gfx.events),
-   ("parent", payload.processes.parent.events)]) AS events,
+  udf_js_get_events([
+   ("content", JSON_EXTRACT(additional_properties, "$.payload.processes.content.events")),
+   ("dynamic", JSON_EXTRACT(additional_properties, "$.payload.processes.dynamic.events")),
+   ("gfx", JSON_EXTRACT(additional_properties, "$.payload.processes.gfx.events")),
+   ("parent", JSON_EXTRACT(additional_properties, "$.payload.processes.parent.events"))]) AS events,
 
   -- bug 1339655
   SAFE_CAST(JSON_EXTRACT_SCALAR(payload.histograms.ssl_handshake_result, "$.values.0") AS INT64) AS ssl_handshake_result_success,

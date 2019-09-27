@@ -178,13 +178,13 @@ SELECT
   environment.system.gfx.headless AS environment_system_gfx_headless,
 
   -- TODO: Deprecate and eventually remove this field, preferring the top-level user_pref_* fields for easy schema evolution.
-  udf_get_old_user_prefs(environment.settings.user_prefs) AS user_prefs,
+  udf_get_old_user_prefs(JSON_EXTRACT(additional_properties, "$.environment.settings.user_prefs")) AS user_prefs,
 
-  udf_get_events([
-   ("content", payload.processes.content.events),
-   ("dynamic", payload.processes.dynamic.events),
-   ("gfx", payload.processes.gfx.events),
-   ("parent", payload.processes.parent.events)]) AS events,
+  udf_js_get_events([
+   ("content", JSON_EXTRACT(additional_properties, "$.payload.processes.content.events")),
+   ("dynamic", JSON_EXTRACT(additional_properties, "$.payload.processes.dynamic.events")),
+   ("gfx", JSON_EXTRACT(additional_properties, "$.payload.processes.gfx.events")),
+   ("parent", JSON_EXTRACT(additional_properties, "$.payload.processes.parent.events"))]) AS events,
 
   -- bug 1339655
   SAFE_CAST(JSON_EXTRACT_SCALAR(payload.histograms.ssl_handshake_result, "$.values.0") AS INT64) AS ssl_handshake_result_success,
