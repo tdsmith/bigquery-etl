@@ -2,7 +2,7 @@
   {
     "type": "DATE",
     "name": "submission_date",
-    "mode": "NULLABLE"
+    "mode": "REQUIRED"
   },
   {
     "type": "INTEGER",
