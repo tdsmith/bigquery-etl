@@ -110,7 +110,7 @@
     "mode": "NULLABLE"
   },
   {
-    "type": "FLOAT",
+    "type": "NUMERIC",
     "name": "subsession_hours_sum",
     "mode": "NULLABLE"
   },
