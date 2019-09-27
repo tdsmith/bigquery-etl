@@ -17,17 +17,35 @@ CREATE TEMP FUNCTION
       1 ));
 --
 -- Return the version of the search addon if it exists, null otherwise
-CREATE TEMP FUNCTION
-  get_search_addon_version(addon_list ANY TYPE) AS ((
+CREATE TEMP FUNCTION get_search_addon_version(active_addons ANY type) AS (
+  (
     SELECT
       element.version
     FROM
-      UNNEST(addon_list)
+      (
+        SELECT
+          list,
+          _offset_1
+        FROM
+          UNNEST(active_addons)
+        WITH
+          OFFSET AS _offset_1
+      ),
+      UNNEST(list)
+    WITH
+      OFFSET AS _offset_2
     WHERE
       element.addon_id = 'followonsearch@mozilla.com'
+    GROUP BY
+      element.version
+    ORDER BY
+      COUNT(element.version) DESC,
+      MAX(_offset_1) DESC,
+      MAX(_offset_2) DESC
     LIMIT
       1
-  ));
+  )
+);
 
 WITH
   augmented AS (
@@ -95,7 +113,7 @@ WITH
     engine,
     source,
     udf_mode_last(ARRAY_AGG(country) OVER w1) AS country,
-    get_search_addon_version(active_addons.list) AS addon_version,
+    get_search_addon_version(ARRAY_AGG(active_addons) OVER w1) AS addon_version,
     udf_mode_last(ARRAY_AGG(app_version) OVER w1) AS app_version,
     udf_mode_last(ARRAY_AGG(distribution_id) OVER w1) AS distribution_id,
     udf_mode_last(ARRAY_AGG(locale) OVER w1) AS locale,
